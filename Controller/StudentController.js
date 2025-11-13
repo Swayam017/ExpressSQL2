@@ -1,57 +1,93 @@
 const db = require("../utils/db_connections");
-const addEntries = (req,res)=> {
-    const {email,name} = req.body;
-    const insertQuery = `INSERT into students (email,name) values(?,?)`;
-    db.execute(insertQuery,[email,name],(err) =>{
-        if(err){
-            console.log(err.message);
-            res.status(500).send(err.message);
-            return;
-        }
-        console.log("value has been inserted");
-        res.status(200).send(`Student with ${name} is successfully added`);
-    })
-}
 
-const updateEntry = (req,res) =>{
-    const {id} = req.params;
-    const {name} = req.body;
-    const updateQuery = "UPDATE students set name=? where id=?";
-    db.execute(updateQuery,[name,id],(err,result)=>{
-        if(err){
-            console.log(err.message);
-            res.status(500).send(err.message);
-            db.end();
-            return;
-        }
-        if(result.affectedRows===0){
-            res.status(404).send("Student not found");
-            return;
-        }
-        res.status(200).send("user has been updated");
-    })
+// Insert a new student
+const addStudent = (req, res) => {
+    const { name, email, age } = req.body;
 
-}
+    const sql = `INSERT INTO students (name, email, age) VALUES (?, ?, ?)`;
 
-const deleteEntry = (req,res)=>{
-    const {id} = req.params;
-    const deleteQuery = "DELETE from students where id=?";
-    db.execute(deleteQuery,[id],(err,result)=>{
-        if(err){
-            console.log(err.message);
-            res.status(500).send(err.message);
-            return;
+    db.execute(sql, [name, email, age], (err, result) => {
+        if (err) {
+            console.log("Insert Error:", err.message);
+            return res.status(500).send(err.message);
         }
-        if(result.affectedRows === 0){
-            res.status(404).send("Student not found");
-            return;
+
+        console.log("Inserted:", { name, email, age });
+        res.status(201).send("Student added successfully");
+    });
+};
+
+// Get all students
+const getAllStudents = (req, res) => {
+    const sql = `SELECT * FROM students`;
+
+    db.execute(sql, (err, rows) => {
+        if (err) return res.status(500).send(err.message);
+        res.status(200).json(rows);
+    });
+};
+
+// Get student by ID
+const getStudentById = (req, res) => {
+    const { id } = req.params;
+
+    const sql = `SELECT * FROM students WHERE id=?`;
+
+    db.execute(sql, [id], (err, rows) => {
+        if (err) return res.status(500).send(err.message);
+
+        if (rows.length === 0)
+            return res.status(404).send("Student not found");
+
+        res.status(200).json(rows[0]);
+    });
+};
+
+// Update student
+const updateStudent = (req, res) => {
+    const { id } = req.params;
+    const { name, email, age } = req.body;
+
+    const sql = `UPDATE students SET name=?, email=?, age=? WHERE id=?`;
+
+    db.execute(sql, [name, email, age, id], (err, result) => {
+        if (err) {
+            console.log("Update Error:", err.message);
+            return res.status(500).send(err.message);
         }
-        res.status(200).send(`user with ${id} is deleted`);
-    })
-}
+
+        if (result.affectedRows === 0)
+            return res.status(404).send("Student not found");
+
+        console.log("Updated ID:", id);
+        res.status(200).send("Student updated successfully");
+    });
+};
+
+// Delete student
+const deleteStudent = (req, res) => {
+    const { id } = req.params;
+
+    const sql = `DELETE FROM students WHERE id=?`;
+
+    db.execute(sql, [id], (err, result) => {
+        if (err) {
+            console.log("Delete Error:", err.message);
+            return res.status(500).send(err.message);
+        }
+
+        if (result.affectedRows === 0)
+            return res.status(404).send("Student not found");
+
+        console.log("Deleted ID:", id);
+        res.status(200).send("Student deleted successfully");
+    });
+};
 
 module.exports = {
-    addEntries,
-    updateEntry,
-    deleteEntry
-}
+    addStudent,
+    getAllStudents,
+    getStudentById,
+    updateStudent,
+    deleteStudent
+};
