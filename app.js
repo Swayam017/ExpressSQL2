@@ -4,6 +4,9 @@ const db = require("./utils/db_connections");
 const studentRoutes = require("./routes/StudentRoutes");
 
 const studentModel = require("./models/students")
+
+require("./models")
+
 app.use(express.json());
 app.use("/students",studentRoutes);
 
