@@ -1,8 +1,9 @@
 const { Student, IdentityCard } = require("../models");
 
-// =============================================
-// CREATE IdentityCard for a Student
-// =============================================
+// ============================================
+// CREATE Identity Card for a Student
+// POST /students/:studentId/identity-card
+// ============================================
 exports.createCard = async (req, res) => {
     try {
         const { cardNo } = req.body;
@@ -10,76 +11,86 @@ exports.createCard = async (req, res) => {
 
         // Check if student exists
         const student = await Student.findByPk(studentId);
-        if (!student) return res.status(404).send("Student not found");
+        if (!student) {
+            return res.status(404).send("Student not found");
+        }
 
-        // Create card
+        // Create IdentityCard (IMPORTANT FIX)
         const card = await IdentityCard.create({
             cardNo,
-            studentId
+            StudentId: studentId  // ✔ FIXED
         });
 
         res.status(201).json({
             message: "Identity card created successfully",
-            card
+            data: card
         });
 
     } catch (error) {
-        console.log(error);
-        res.status(500).send("Unable to create Identity Card");
+        console.error(error);
+        res.status(500).send("Error creating identity card");
     }
 };
 
-// =============================================
-// GET IdentityCard by ID (with Student info)
-// =============================================
+// ============================================
+// GET Identity Card by ID
+// ============================================
 exports.getCardById = async (req, res) => {
     try {
         const card = await IdentityCard.findByPk(req.params.id, {
             include: Student
         });
 
-        if (!card) return res.status(404).send("Identity card not found");
+        if (!card) {
+            return res.status(404).send("Identity card not found");
+        }
 
-        res.status(200).json(card);
+        res.json(card);
+
     } catch (error) {
-        console.log(error);
-        res.status(500).send("Unable to fetch identity card");
+        console.error(error);
+        res.status(500).send("Error fetching identity card");
     }
 };
 
-// =============================================
-// GET Student with IdentityCard
-// =============================================
+// ============================================
+// GET Student with Identity Card
+// ============================================
 exports.getStudentWithCard = async (req, res) => {
     try {
         const student = await Student.findByPk(req.params.studentId, {
             include: IdentityCard
         });
 
-        if (!student) return res.status(404).send("Student not found");
+        if (!student) {
+            return res.status(404).send("Student not found");
+        }
 
-        res.status(200).json(student);
+        res.json(student);
 
     } catch (error) {
-        console.log(error);
-        res.status(500).send("Unable to fetch student with card");
+        console.error(error);
+        res.status(500).send("Error fetching student identity card");
     }
 };
 
-// =============================================
-// DELETE IdentityCard
-// =============================================
+// ============================================
+// DELETE Identity Card
+// ============================================
 exports.deleteCard = async (req, res) => {
     try {
         const card = await IdentityCard.findByPk(req.params.id);
 
-        if (!card) return res.status(404).send("Identity card not found");
+        if (!card) {
+            return res.status(404).send("Identity card not found");
+        }
 
         await card.destroy();
 
-        res.status(200).send("Identity card deleted");
+        res.send("Identity card deleted successfully");
+
     } catch (error) {
-        console.log(error);
-        res.status(500).send("Unable to delete identity card");
+        console.error(error);
+        res.status(500).send("Error deleting card");
     }
 };

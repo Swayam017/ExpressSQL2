@@ -31,7 +31,7 @@ exports.addStudentToDepartment = async (req, res) => {
             name,
             email,
             age,
-            departmentId
+             DepartmentId: departmentId 
         });
 
         res.status(201).json({
@@ -89,5 +89,24 @@ exports.getStudentsByDepartment = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).send("Unable to fetch students");
+    }
+};
+
+exports.assignStudent = async (req, res) => {
+    try {
+        const { deptId, studentId } = req.params;
+
+        const department = await Department.findByPk(deptId);
+        if (!department) return res.status(404).send("Department not found");
+
+        const student = await Student.findByPk(studentId);
+        if (!student) return res.status(404).send("Student not found");
+
+        await student.update({ DepartmentId: deptId });
+
+        res.send("Student assigned to department successfully");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error assigning student");
     }
 };
